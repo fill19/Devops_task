@@ -7,12 +7,12 @@ pool:
   vmImage: 'ubuntu-latest'  # Using the latest Ubuntu image for the pipeline agent
 
 variables:
-  # Define Terraform version and directory where Terraform code resides
+  # Define Terraform version and working directory
   terraformVersion: '1.10.0'
-  terraformWorkingDirectory: 'C:\Users\dfilipo\Terraform\tech_task'  # Change this to the path of your Terraform files
+  terraformWorkingDirectory: '$(System.DefaultWorkingDirectory)/Terraform/tech_task'  # Use Linux path for Ubuntu agent
 
   # Azure Service Connection (pre-configured in Azure DevOps)
-  serviceConnection: 'TestTask'  # Update with the name of your service connection
+  serviceConnection: 'TestTask'  # Update with the name of your Azure service connection
 
   # Azure Subscription ID
   subscriptionId: '23720a58-e0e5-4101-a55d-1ac6c2e7e0e6'  # Replace with your Azure subscription ID
