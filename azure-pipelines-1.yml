@@ -4,88 +4,39 @@ trigger:
       - main  # The pipeline will trigger on changes to the 'main' branch
 
 pool:
-  pool: 'Azure Pipelines'  # Default pipeline
+  pool: 'Default'  # Default pipeline
 
 variables:
-  # Define Terraform version and working directory
-  terraformVersion: '1.10.0'
-  terraformWorkingDirectory: './terraform'  
-
-  # Azure Service Connection (pre-configured in Azure DevOps)
-  serviceConnection: 'TestTask'  # Update with the name of your Azure service connection
-
-  # Azure Subscription ID
-  subscriptionId: '23720a58-e0e5-4101-a55d-1ac6c2e7e0e6'  # Replace with your Azure subscription ID
+  azureServiceConnection: 'TestTask'  
 
 stages:
-  - stage: 'Terraform_Initialize'
-    displayName: 'Initialize Terraform'
+  - stage: Plan
+    displayName: 'Terraform Plan'
     jobs:
-      - job: 'Terraform_Install'
-        displayName: 'Install and Initialize Terraform'
+      - job: TerraformPlan
+        displayName: 'Terraform Plan'
         steps:
-          # Checkout the code from the repository
-          - checkout: self
-
-          # Install Terraform
-          - task: TerraformInstaller@0
+          # Step 1: Initialize and Plan Terraform
+          - task: AzureCLI@2
             inputs:
-              terraformVersion: $(terraformVersion)
-
-          # Initialize Terraform in the specified directory
-          - task: Bash@3
-            displayName: 'Terraform Init'
-            inputs:
-              targetType: 'inline'
-              script: |
-                cd $(terraformWorkingDirectory)
+              azureSubscription: $(azureServiceConnection)  # The service connection defined in your pipeline
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                echo "Setting up Azure authentication using the service principal credentials from the service connection"
+                echo "Terraform init..."
                 terraform init
-
-  - stage: 'Terraform_Plan'
-    displayName: 'Terraform Plan Stage'
-    dependsOn: 'Terraform_Initialize'
-    jobs:
-      - job: 'Terraform_Plan'
-        displayName: 'Run Terraform Plan'
-        steps:
-          # Run Terraform plan to preview the changes
-          - task: Bash@3
-            displayName: 'Terraform Plan'
+                echo "Terrform plan..."
+                terraform plan
+            displayName: 'Terraform init and plan'
+          
+          # Step 2: Deploy
+          - task: AzureCLI@2
             inputs:
-              targetType: 'inline'
-              script: |
-                cd $(terraformWorkingDirectory)
-                terraform plan -out=tfplan
-
-          # Publish the Terraform plan as an artifact
-          - task: PublishBuildArtifacts@1
-            inputs:
-              pathToPublish: '$(terraformWorkingDirectory)/tfplan'
-              artifactName: 'terraform-plan'
-              publishLocation: 'Container'
-
-  - stage: 'Terraform_Apply'
-    displayName: 'Apply Terraform Changes'
-    dependsOn: 'Terraform_Plan'
-    jobs:
-      - job: 'Terraform_Apply'
-        displayName: 'Apply Terraform'
-        steps:
-          # Check out the code from the repository
-          - checkout: self
-
-          # Apply the Terraform plan to deploy resources
-          - task: Bash@3
-            displayName: 'Terraform Apply'
-            inputs:
-              targetType: 'inline'
-              script: |
-                cd $(terraformWorkingDirectory)
-                terraform apply -auto-approve tfplan
-
-          # Publish the Terraform state file as an artifact (optional)
-          - task: PublishBuildArtifacts@1
-            inputs:
-              pathToPublish: '$(terraformWorkingDirectory)/terraform.tfstate'
-              artifactName: 'terraform-state'
-              publishLocation: 'Container'
+              azureSubscription: $(azureServiceConnection)  # The service connection defined in your pipeline
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                echo "Terraform apply"
+                terraform apply -auto-approve
+            displayName: 'Terraform apply'
