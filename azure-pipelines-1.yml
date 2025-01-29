@@ -4,7 +4,7 @@ trigger:
       - main  # The pipeline will trigger on changes to the 'main' branch
 
 pool:
-  vmImage: 'ubuntu-latest'  # Using the latest Ubuntu image for the pipeline agent
+  name: 'Default'  # Using the latest Ubuntu image for the pipeline agent
 
 variables:
   # Define Terraform version and working directory
