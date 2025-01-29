@@ -9,7 +9,7 @@ pool:
 variables:
   # Define Terraform version and working directory
   terraformVersion: '1.10.0'
-  terraformWorkingDirectory: './Users/dfilipo/Terraform/tech_task'  
+  terraformWorkingDirectory: './terraform'  
 
   # Azure Service Connection (pre-configured in Azure DevOps)
   serviceConnection: 'TestTask'  # Update with the name of your Azure service connection
