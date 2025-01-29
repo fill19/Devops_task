@@ -4,7 +4,7 @@ trigger:
       - main  # The pipeline will trigger on changes to the 'main' branch
 
 pool:
-  Pool: 'Azure Pipelines'  # Default pipeline
+  pool: 'Azure Pipelines'  # Default pipeline
 
 variables:
   # Define Terraform version and working directory
