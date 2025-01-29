@@ -1,0 +1,42 @@
+trigger:
+  branches:
+    include:
+      - main  # The pipeline will trigger on changes to the 'main' branch
+
+pool:
+  pool: 'Default'  # Default pipeline
+
+variables:
+  azureServiceConnection: 'TestTask'  
+
+stages:
+  - stage: Plan
+    displayName: 'Terraform Plan'
+    jobs:
+      - job: TerraformPlan
+        displayName: 'Terraform Plan'
+        steps:
+          # Step 1: Initialize and Plan Terraform
+          - task: AzureCLI@2
+            inputs:
+              azureSubscription: $(azureServiceConnection)  # The service connection defined in your pipeline
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                echo "Setting up Azure authentication using the service principal credentials from the service connection"
+                echo "Terraform init..."
+                terraform init
+                echo "Terrform plan..."
+                terraform plan
+            displayName: 'Terraform init and plan'
+          
+          # Step 2: Deploy
+          - task: AzureCLI@2
+            inputs:
+              azureSubscription: $(azureServiceConnection)  # The service connection defined in your pipeline
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                echo "Terraform apply"
+                terraform apply -auto-approve
+            displayName: 'Terraform apply'
